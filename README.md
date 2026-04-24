@@ -2,6 +2,24 @@
 
 Complete Terraform configuration for deploying IBM Cloud VPC and Power VS infrastructure with secure connectivity.
 
+## ⚠️ IMPORTANT DISCLAIMER
+
+**READ THIS BEFORE USING THIS SOFTWARE**
+
+This software is provided for **educational and demonstration purposes only**. By using this software, you acknowledge and agree that:
+
+- 🚨 **YOU ARE SOLELY RESPONSIBLE** for all costs incurred from deploying resources to IBM Cloud
+- 🚨 **THE AUTHOR IS NOT LIABLE** for any charges, data loss, security issues, or damages
+- 🚨 **NO WARRANTY** is provided - use at your own risk
+- 🚨 **TEST THOROUGHLY** in non-production environments before any production use
+- 🚨 **YOU ACCEPT FULL RESPONSIBILITY** for all consequences of using this software
+
+**Estimated monthly cost: $500-600 USD** - Resources will incur charges immediately upon deployment.
+
+See the [LICENSE](LICENSE) file for complete terms and conditions. By proceeding, you accept all terms.
+
+---
+
 ## 🏗️ Architecture Overview
 
 This Terraform project provisions:
@@ -391,7 +409,13 @@ terraform output -json > outputs.json
 
 ## 📝 License
 
-This project is provided as-is for educational and development purposes.
+This project is licensed under the MIT License with additional disclaimers - see the [LICENSE](LICENSE) file for complete details.
+
+**Key Points:**
+- ✅ Free to use, modify, and distribute
+- ❌ No warranty or liability
+- ❌ Author not responsible for costs or damages
+- ❌ Use at your own risk
 
 ## 🤝 Contributing
 

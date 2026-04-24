@@ -379,6 +379,28 @@ function Main {
 ╚═══════════════════════════════════════════════════════════════╝
 "@ -ForegroundColor Green
     
+    Write-Host ""
+    Write-Host "⚠️  IMPORTANT DISCLAIMER ⚠️" -ForegroundColor Red
+    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
+    Write-Host "This software is provided for EDUCATIONAL purposes only." -ForegroundColor Yellow
+    Write-Host "By proceeding, you acknowledge and agree that:" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "• YOU ARE SOLELY RESPONSIBLE for all IBM Cloud costs incurred" -ForegroundColor Yellow
+    Write-Host "• THE AUTHOR IS NOT LIABLE for any charges, data loss, or damages" -ForegroundColor Yellow
+    Write-Host "• NO WARRANTY is provided - use at your own risk" -ForegroundColor Yellow
+    Write-Host "• Estimated cost: ~`$500-600 USD per month" -ForegroundColor Yellow
+    Write-Host ""
+    Write-Host "See LICENSE file for complete terms. Use at your own risk." -ForegroundColor Yellow
+    Write-Host "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━" -ForegroundColor Red
+    Write-Host ""
+    
+    $acceptTerms = Read-Host "Do you accept these terms and wish to continue? (yes/no)"
+    if ($acceptTerms -ne "yes") {
+        Write-Error "Terms not accepted. Exiting."
+        exit 0
+    }
+    
+    Write-Host ""
     Write-Info "This script will help you set up and deploy the infrastructure"
     Write-Host ""
     

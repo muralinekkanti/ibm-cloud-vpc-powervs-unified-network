@@ -372,6 +372,31 @@ main() {
 EOF
     echo -e "${NC}"
     
+    echo -e "${RED}"
+    cat << "EOF"
+⚠️  IMPORTANT DISCLAIMER ⚠️
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+This software is provided for EDUCATIONAL purposes only.
+By proceeding, you acknowledge and agree that:
+
+• YOU ARE SOLELY RESPONSIBLE for all IBM Cloud costs incurred
+• THE AUTHOR IS NOT LIABLE for any charges, data loss, or damages
+• NO WARRANTY is provided - use at your own risk
+• Estimated cost: ~$500-600 USD per month
+
+See LICENSE file for complete terms. Use at your own risk.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+EOF
+    echo -e "${NC}"
+    echo ""
+    
+    read -p "Do you accept these terms and wish to continue? (yes/no): " ACCEPT_TERMS
+    if [ "$ACCEPT_TERMS" != "yes" ]; then
+        print_error "Terms not accepted. Exiting."
+        exit 0
+    fi
+    
+    echo ""
     print_info "This script will help you set up and deploy the infrastructure"
     echo ""
     
