@@ -1,134 +1,137 @@
 # ==============================================================================
+# IBM Cloud VPC-Power VS Unified Network Configuration
+# ==============================================================================
+# This example shows the required variables for deploying the unified network
+# infrastructure that connects IBM Cloud VPC (x86) and Power Virtual Server.
+#
+# SETUP INSTRUCTIONS:
+# 1. Copy this file: cp terraform.tfvars.example terraform.tfvars
+# 2. Edit terraform.tfvars with your actual values
+# 3. Never commit terraform.tfvars to Git (it's in .gitignore)
+# ==============================================================================
+
+# ==============================================================================
 # IBM Cloud Authentication
 # ==============================================================================
 # Get your API key from: https://cloud.ibm.com/iam/apikeys
+# Click "Create" and copy the key immediately (you won't see it again)
 ibmcloud_api_key = "YOUR_IBM_CLOUD_API_KEY_HERE"
 
 # ==============================================================================
-# General Configuration
+# Project Configuration
 # ==============================================================================
-region         = "us-south"
-resource_group = "Default"
-project_name   = "dev-infra"
-environment    = "dev"
+# Project name - used as prefix for all resources
+# Example: "mmn-vpc-pvs-nat" creates resources like "mmn-vpc-pvs-nat-vpc"
+project_name = "your-project-name"
 
-tags = [
-  "terraform",
-  "dev-environment",
-  "power-vs",
-  "vpc"
-]
+# IBM Cloud region for VPC resources
+# Options: us-south, us-east, eu-gb, eu-de, jp-tok, au-syd
+region = "us-east"
 
-# ==============================================================================
-# VPC Configuration
-# ==============================================================================
-vpc_cidr              = "10.240.0.0/24"
-vpc_zones             = 2
-enable_public_gateway = false
+# Availability zone within the region
+# Must match the region (e.g., us-east-1, us-east-2, us-east-3)
+zone = "us-east-1"
+
+# Resource group ID
+# Find yours: ibmcloud resource groups
+# Or use: ibmcloud resource group <group-name> --id
+resource_group_id = "YOUR_RESOURCE_GROUP_ID"
 
 # ==============================================================================
-# VPN Gateway Configuration
+# SSH Key Configuration
 # ==============================================================================
-enable_vpn_gateway = true
-vpn_mode           = "route"  # Options: "route" or "policy"
+# VPC SSH key name (must already exist in IBM Cloud VPC)
+# Create: ibmcloud is key-create <name> @~/.ssh/id_rsa.pub
+# List: ibmcloud is keys
+vpc_ssh_key_name = "your-vpc-ssh-key-name"
 
-# VPN Connection Settings (optional - configure when ready to connect)
-# enable_vpn_connection = true
-# peer_gateway_ip       = "203.0.113.1"  # Your peer VPN gateway public IP
-# preshared_key         = "your-secure-preshared-key-here"
+# Secondary SSH key name (optional, for additional access)
+secondary_ssh_key_name = "your-secondary-ssh-key-name"
 
-# Static Routing (when BGP is disabled)
-# local_cidrs = ["10.240.0.0/24"]
-# peer_cidrs  = ["192.168.1.0/24"]
-
-# ==============================================================================
-# BGP Configuration (for Route-Based VPN)
-# ==============================================================================
-# Enable BGP for dynamic routing
-# enable_bgp    = true
-# bgp_asn       = 64512  # IBM Cloud side ASN
-# peer_bgp_asn  = 64513  # Peer gateway ASN
-
-# IKE Policy (Phase 1)
-# ike_version                  = 2
-# ike_authentication_algorithm = "sha256"  # Options: sha256, sha384, sha512
-# ike_encryption_algorithm     = "aes256"  # Options: aes128, aes192, aes256
-# ike_dh_group                 = 14        # Options: 2, 5, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24
-
-# IPsec Policy (Phase 2)
-# ipsec_authentication_algorithm = "sha256"  # Options: sha256, sha384, sha512
-# ipsec_encryption_algorithm     = "aes256"  # Options: aes128, aes192, aes256
-# ipsec_pfs                      = "group_14" # Options: disabled, group_2, group_5, group_14, etc.
-
-# Dead Peer Detection
-# dpd_action   = "restart"  # Options: restart, clear, hold, none
-# dpd_interval = 30         # Seconds (15-86400)
-# dpd_timeout  = 120        # Seconds (30-86400)
+# Power VS SSH key name (will be created in Power VS workspace)
+# This is just a name, the actual key content is in murali-key-n1-rsa.pub
+power_vs_ssh_key_name = "your-power-vs-ssh-key-name"
 
 # ==============================================================================
-# Virtual Private Endpoint Configuration
+# Power Virtual Server Configuration
 # ==============================================================================
-enable_vpe = true
-# Get COS instance CRN from: ibmcloud resource service-instances --service-name cloud-object-storage
-cos_instance_crn = ""  # Example: "crn:v1:bluemix:public:cloud-object-storage:global:a/..."
-
-# ==============================================================================
-# Power VS Configuration
-# ==============================================================================
-power_vs_zone         = "us-south"  # Options: us-south, us-east, dal12, lon04, etc.
-power_vs_network_cidr = "192.168.10.0/24"
-power_vs_instance_count = 2
-
-# Power VS Image Options:
-# - RHEL: RHEL8-SP4, RHEL8-SP6, RHEL9-SP2
-# - SLES: SLES15-SP3, SLES15-SP4, SLES15-SP5
-power_vs_image_name = "RHEL8-SP4"
-
-# Processor Configuration
-power_vs_processor_type = "shared"  # Options: "shared", "dedicated", "capped"
-power_vs_cores          = 2         # 0.25 to 32 cores
-power_vs_memory         = 16        # 2 to 512 GB
-
-# Storage Configuration
-power_vs_storage_size = 100      # 20 to 2000 GB
-power_vs_storage_type = "tier3"  # Options: "tier1" (faster), "tier3" (cost-effective)
-
-# SSH Key for Power VS instances
-# Generate with: ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-# Then copy the public key: cat ~/.ssh/id_rsa.pub
-ssh_public_key = ""  # Paste your SSH public key here
+# Power VS zone/datacenter
+# Options: wdc06, wdc07 (Washington DC), dal12, dal13 (Dallas), 
+#          lon04, lon06 (London), tok04 (Tokyo), syd04, syd05 (Sydney)
+# Must be in same region as VPC for Transit Gateway connectivity
+power_vs_zone = "wdc06"
 
 # ==============================================================================
-# Transit Gateway Configuration
+# Network Configuration (Usually no changes needed)
 # ==============================================================================
-enable_transit_gateway  = true
-transit_gateway_global  = false  # Set to true for multi-region connectivity
+# VPC subnet CIDR - unified addressing space
+# Default: 10.14.105.0/24 (supports 254 hosts)
+# vpc_subnet_cidr = "10.14.105.0/24"
+
+# Power VS network CIDR - internal Power VS addressing
+# Default: 192.168.1.0/24
+# power_vs_network_cidr = "192.168.1.0/24"
 
 # ==============================================================================
-# Example Configurations for Different Scenarios
+# Resource Sizing (Optional - defaults are set)
+# ==============================================================================
+# VPC VSI profile (x86 instances)
+# Default: cx2-2x4 (2 vCPUs, 4GB RAM)
+# Options: cx2-2x4, cx2-4x8, cx2-8x16, etc.
+# vsi_profile = "cx2-2x4"
+
+# Power VS LPAR configuration
+# Default: s922, shared, 0.25 cores, 2GB RAM, tier3 storage
+# power_vs_sys_type = "s922"
+# power_vs_proc_type = "shared"
+# power_vs_processors = 0.25
+# power_vs_memory = 2
+# power_vs_storage_type = "tier3"
+
+# ==============================================================================
+# Example Configurations
 # ==============================================================================
 
-# Minimal Development Setup (Cost-Optimized):
-# vpc_zones = 1
-# power_vs_instance_count = 1
-# power_vs_cores = 0.5
+# MINIMAL SETUP (Cost-Optimized for Testing):
+# project_name = "test-vpc-pvs"
+# region = "us-east"
+# zone = "us-east-1"
+# power_vs_zone = "wdc06"
+# vpc_ssh_key_name = "my-test-key"
+# power_vs_ssh_key_name = "my-power-key"
+
+# PRODUCTION SETUP (High Availability):
+# project_name = "prod-vpc-pvs"
+# region = "us-east"
+# zone = "us-east-1"
+# power_vs_zone = "wdc06"
+# vsi_profile = "cx2-4x8"
+# power_vs_processors = 1.0
 # power_vs_memory = 8
-# power_vs_storage_size = 50
-# enable_vpn_gateway = false
-# enable_vpe = false
-
-# Standard Development Setup (Recommended):
-# vpc_zones = 2
-# power_vs_instance_count = 2
-# power_vs_cores = 2
-# power_vs_memory = 16
-# power_vs_storage_size = 100
-
-# Production-Ready Setup:
-# vpc_zones = 3
-# power_vs_instance_count = 3
-# power_vs_cores = 4
-# power_vs_memory = 32
-# power_vs_storage_size = 200
-# power_vs_processor_type = "dedicated"
 # power_vs_storage_type = "tier1"
+
+# ==============================================================================
+# What Gets Created
+# ==============================================================================
+# VPC Infrastructure:
+#   - VPC with subnet (10.14.105.0/24)
+#   - 3 Ubuntu VSIs (including NAT Gateway at 10.14.105.254)
+#   - 1 Windows VSI
+#   - Security groups and routing tables
+#   - Public gateway and floating IPs
+#
+# Power VS Infrastructure:
+#   - Power VS workspace
+#   - Private network (192.168.1.0/24)
+#   - 3 LPARs: CentOS, RHEL 9, RHEL 8
+#   - Secondary IPs for unified addressing
+#   - Power VS routes for LPAR-to-LPAR communication
+#
+# Connectivity:
+#   - Transit Gateway connecting VPC and Power VS
+#   - NAT Gateway for address translation
+#   - VPC custom routes for unified subnet
+#
+# Total Resources: ~41 resources
+# Estimated Cost: ~$200-300/month (varies by region and usage)
+# ==============================================================================
