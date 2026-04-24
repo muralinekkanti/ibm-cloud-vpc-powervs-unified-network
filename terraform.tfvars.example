@@ -1,0 +1,134 @@
+# ==============================================================================
+# IBM Cloud Authentication
+# ==============================================================================
+# Get your API key from: https://cloud.ibm.com/iam/apikeys
+ibmcloud_api_key = "YOUR_IBM_CLOUD_API_KEY_HERE"
+
+# ==============================================================================
+# General Configuration
+# ==============================================================================
+region         = "us-south"
+resource_group = "Default"
+project_name   = "dev-infra"
+environment    = "dev"
+
+tags = [
+  "terraform",
+  "dev-environment",
+  "power-vs",
+  "vpc"
+]
+
+# ==============================================================================
+# VPC Configuration
+# ==============================================================================
+vpc_cidr              = "10.240.0.0/24"
+vpc_zones             = 2
+enable_public_gateway = false
+
+# ==============================================================================
+# VPN Gateway Configuration
+# ==============================================================================
+enable_vpn_gateway = true
+vpn_mode           = "route"  # Options: "route" or "policy"
+
+# VPN Connection Settings (optional - configure when ready to connect)
+# enable_vpn_connection = true
+# peer_gateway_ip       = "203.0.113.1"  # Your peer VPN gateway public IP
+# preshared_key         = "your-secure-preshared-key-here"
+
+# Static Routing (when BGP is disabled)
+# local_cidrs = ["10.240.0.0/24"]
+# peer_cidrs  = ["192.168.1.0/24"]
+
+# ==============================================================================
+# BGP Configuration (for Route-Based VPN)
+# ==============================================================================
+# Enable BGP for dynamic routing
+# enable_bgp    = true
+# bgp_asn       = 64512  # IBM Cloud side ASN
+# peer_bgp_asn  = 64513  # Peer gateway ASN
+
+# IKE Policy (Phase 1)
+# ike_version                  = 2
+# ike_authentication_algorithm = "sha256"  # Options: sha256, sha384, sha512
+# ike_encryption_algorithm     = "aes256"  # Options: aes128, aes192, aes256
+# ike_dh_group                 = 14        # Options: 2, 5, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24
+
+# IPsec Policy (Phase 2)
+# ipsec_authentication_algorithm = "sha256"  # Options: sha256, sha384, sha512
+# ipsec_encryption_algorithm     = "aes256"  # Options: aes128, aes192, aes256
+# ipsec_pfs                      = "group_14" # Options: disabled, group_2, group_5, group_14, etc.
+
+# Dead Peer Detection
+# dpd_action   = "restart"  # Options: restart, clear, hold, none
+# dpd_interval = 30         # Seconds (15-86400)
+# dpd_timeout  = 120        # Seconds (30-86400)
+
+# ==============================================================================
+# Virtual Private Endpoint Configuration
+# ==============================================================================
+enable_vpe = true
+# Get COS instance CRN from: ibmcloud resource service-instances --service-name cloud-object-storage
+cos_instance_crn = ""  # Example: "crn:v1:bluemix:public:cloud-object-storage:global:a/..."
+
+# ==============================================================================
+# Power VS Configuration
+# ==============================================================================
+power_vs_zone         = "us-south"  # Options: us-south, us-east, dal12, lon04, etc.
+power_vs_network_cidr = "192.168.10.0/24"
+power_vs_instance_count = 2
+
+# Power VS Image Options:
+# - RHEL: RHEL8-SP4, RHEL8-SP6, RHEL9-SP2
+# - SLES: SLES15-SP3, SLES15-SP4, SLES15-SP5
+power_vs_image_name = "RHEL8-SP4"
+
+# Processor Configuration
+power_vs_processor_type = "shared"  # Options: "shared", "dedicated", "capped"
+power_vs_cores          = 2         # 0.25 to 32 cores
+power_vs_memory         = 16        # 2 to 512 GB
+
+# Storage Configuration
+power_vs_storage_size = 100      # 20 to 2000 GB
+power_vs_storage_type = "tier3"  # Options: "tier1" (faster), "tier3" (cost-effective)
+
+# SSH Key for Power VS instances
+# Generate with: ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
+# Then copy the public key: cat ~/.ssh/id_rsa.pub
+ssh_public_key = ""  # Paste your SSH public key here
+
+# ==============================================================================
+# Transit Gateway Configuration
+# ==============================================================================
+enable_transit_gateway  = true
+transit_gateway_global  = false  # Set to true for multi-region connectivity
+
+# ==============================================================================
+# Example Configurations for Different Scenarios
+# ==============================================================================
+
+# Minimal Development Setup (Cost-Optimized):
+# vpc_zones = 1
+# power_vs_instance_count = 1
+# power_vs_cores = 0.5
+# power_vs_memory = 8
+# power_vs_storage_size = 50
+# enable_vpn_gateway = false
+# enable_vpe = false
+
+# Standard Development Setup (Recommended):
+# vpc_zones = 2
+# power_vs_instance_count = 2
+# power_vs_cores = 2
+# power_vs_memory = 16
+# power_vs_storage_size = 100
+
+# Production-Ready Setup:
+# vpc_zones = 3
+# power_vs_instance_count = 3
+# power_vs_cores = 4
+# power_vs_memory = 32
+# power_vs_storage_size = 200
+# power_vs_processor_type = "dedicated"
+# power_vs_storage_type = "tier1"
