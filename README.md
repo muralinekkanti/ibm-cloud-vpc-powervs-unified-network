@@ -70,14 +70,44 @@ Your IBM Cloud API key needs access to:
 
 ## 🚀 Quick Start
 
-### 1. Clone and Setup
+### Option 1: Automated Setup (Recommended)
+
+Use the automated setup script that checks prerequisites, installs missing tools, and guides you through configuration:
+
+**For Linux/macOS:**
+```bash
+./quick-setup.sh
+```
+
+**For Windows (PowerShell):**
+```powershell
+.\quick-setup.ps1
+```
+
+The script will:
+- ✅ Detect your operating system
+- ✅ Check and install required tools (Terraform, IBM Cloud CLI, Git/ssh-keygen)
+- ✅ Generate SSH keys automatically
+- ✅ Prompt for minimal configuration (API key, region, project name)
+- ✅ Create terraform.tfvars with your settings
+- ✅ Initialize and validate Terraform
+- ✅ Optionally deploy infrastructure with one command
+
+**Supported Operating Systems:**
+- **Windows**: Windows 10/11 with PowerShell 5.1+ (uses Chocolatey for package management)
+- **macOS**: macOS 10.15+ (uses Homebrew for package management)
+- **Linux**: Ubuntu/Debian, RHEL/CentOS/Fedora, and other distributions
+
+### Option 2: Manual Setup
+
+#### 1. Clone and Setup
 
 ```bash
 cd ibm-cloud-terraform
 cp terraform.tfvars.example terraform.tfvars
 ```
 
-### 2. Configure Variables
+#### 2. Configure Variables
 
 Edit `terraform.tfvars` with your values:
 
@@ -94,25 +124,25 @@ ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2E..."
 cos_instance_crn = "crn:v1:bluemix:public:cloud-object-storage:..."
 ```
 
-### 3. Initialize Terraform
+#### 3. Initialize Terraform
 
 ```bash
 terraform init
 ```
 
-### 4. Review Plan
+#### 4. Review Plan
 
 ```bash
 terraform plan
 ```
 
-### 5. Deploy Infrastructure
+#### 5. Deploy Infrastructure
 
 ```bash
 terraform apply
 ```
 
-### 6. View Outputs
+#### 6. View Outputs
 
 ```bash
 terraform output
