@@ -49,6 +49,22 @@ variable "tags" {
   type        = list(string)
   default     = ["terraform", "dev-environment"]
 }
+# ==============================================================================
+# SSH Key Configuration
+# ==============================================================================
+
+variable "vpc_ssh_key_name" {
+  description = "Name of the SSH key for VPC instances"
+  type        = string
+  default     = "example-key"
+}
+
+variable "power_vs_ssh_key_name" {
+  description = "Name of the SSH key for Power VS instances"
+  type        = string
+  default     = "example-key"
+}
+
 
 # ==============================================================================
 # VPC Configuration

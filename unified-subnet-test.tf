@@ -382,13 +382,13 @@ resource "ibm_pi_instance" "rhel9_lpar" {
       type                = "ssh"
       host                = self.pi_network[0].ip_address
       user                = "root"
-      private_key         = file("${path.module}/murali-key-n1-rsa.prv")
+      private_key         = file("${path.module}/ssh-keys/${var.vpc_ssh_key_name}.prv")
       timeout             = "15m"
       
       # Use VPC VSI as bastion/jump host to reach private Power VS network
       bastion_host        = ibm_is_floating_ip.vsi_fip.address
       bastion_user        = "ubuntu"
-      bastion_private_key = file("${path.module}/murali-key-n1-rsa.prv")
+      bastion_private_key = file("${path.module}/ssh-keys/${var.vpc_ssh_key_name}.prv")
     }
   }
 }
