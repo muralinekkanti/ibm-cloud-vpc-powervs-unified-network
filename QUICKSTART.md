@@ -1,22 +1,72 @@
 # Quick Start Guide
 
-Get your IBM Cloud infrastructure up and running in minutes!
+Get your IBM Cloud VPC-Power VS unified network infrastructure up and running in minutes!
 
-## ⚡ 5-Minute Setup
+## ⚡ Prerequisites
 
-### Step 1: Get Your IBM Cloud API Key
+Before you begin, ensure you have:
 
-1. Log in to [IBM Cloud](https://cloud.ibm.com)
-2. Go to **Manage** → **Access (IAM)** → **API keys**
-3. Click **Create an IBM Cloud API key**
-4. Copy and save your API key securely
+- ✅ IBM Cloud account with appropriate permissions
+- ✅ Terraform installed (v1.0+)
+- ✅ IBM Cloud CLI installed (optional, for key management)
+- ✅ SSH key pair generated
 
-### Step 2: Configure Your Environment
+## 📦 Step 1: Clone the Repository
 
 ```bash
-# Navigate to the project directory
-cd ibm-cloud-terraform
+git clone https://github.com/muralinekkanti/ibm-cloud-vpc-powervs-unified-network.git
+cd ibm-cloud-vpc-powervs-unified-network
+```
 
+## 🔑 Step 2: Get Your IBM Cloud API Key
+
+1. Log in to [IBM Cloud](https://cloud.ibm.com)
+2. Go to **Manage** → **Access (IAM)** → **[API keys](https://cloud.ibm.com/iam/apikeys)**
+3. Click **Create an IBM Cloud API key**
+4. Give it a name (e.g., "Terraform Deployment")
+5. **Copy and save your API key securely** (you won't see it again!)
+
+## 🔐 Step 3: Set Up SSH Keys
+
+### Generate SSH Keys (if you don't have them)
+
+```bash
+# Generate a new SSH key pair
+ssh-keygen -t rsa -b 4096 -f ~/.ssh/ibm-cloud-key -N ""
+
+# This creates:
+# - Private key: ~/.ssh/ibm-cloud-key
+# - Public key: ~/.ssh/ibm-cloud-key.pub
+```
+
+### Add SSH Key to IBM Cloud VPC
+
+```bash
+# Using IBM Cloud CLI
+ibmcloud login --apikey YOUR_API_KEY
+ibmcloud target -r us-east
+ibmcloud is key-create my-vpc-key @~/.ssh/ibm-cloud-key.pub
+
+# Or via Web Console:
+# https://cloud.ibm.com/vpc-ext/compute/sshKeys
+```
+
+### Copy SSH Keys to Project Directory
+
+```bash
+# Copy your private key to the project directory
+cp ~/.ssh/ibm-cloud-key ./ssh-keys/ibm-cloud-key.prv
+cp ~/.ssh/ibm-cloud-key.pub ./ssh-keys/ibm-cloud-key.pub
+
+# Set correct permissions
+chmod 600 ./ssh-keys/ibm-cloud-key.prv
+```
+
+**Note**: The project uses `ssh-keys/` directory for SSH keys, which is excluded from Git via `.gitignore`.
+
+## ⚙️ Step 4: Configure Your Environment
+
+```bash
 # Copy the example configuration
 cp terraform.tfvars.example terraform.tfvars
 
@@ -24,21 +74,51 @@ cp terraform.tfvars.example terraform.tfvars
 nano terraform.tfvars  # or use your preferred editor
 ```
 
-**Minimum required configuration:**
+### Required Configuration
+
+Edit `terraform.tfvars` and set these **required** values:
 
 ```hcl
-ibmcloud_api_key = "YOUR_API_KEY_HERE"
-region           = "us-south"
-resource_group   = "Default"
+# IBM Cloud API Key (from Step 2)
+ibmcloud_api_key = "YOUR_IBM_CLOUD_API_KEY_HERE"
+
+# Project name (used as prefix for all resources)
+project_name = "my-vpc-pvs"
+
+# Region and zone
+region = "us-east"
+zone   = "us-east-1"
+
+# Resource group ID
+# Find yours: ibmcloud resource groups
+resource_group_id = "YOUR_RESOURCE_GROUP_ID"
+
+# SSH key names
+vpc_ssh_key_name       = "my-vpc-key"  # Name from Step 3
+secondary_ssh_key_name = "my-vpc-key"  # Can be same as above
+power_vs_ssh_key_name  = "my-power-key"
+
+# Power VS zone (must be in same region as VPC)
+power_vs_zone = "wdc06"  # For us-east region
 ```
 
-### Step 3: Deploy
+### Find Your Resource Group ID
 
 ```bash
-# Initialize Terraform
+# List all resource groups
+ibmcloud resource groups
+
+# Get specific group ID
+ibmcloud resource group Default --id
+```
+
+## 🚀 Step 5: Deploy Infrastructure
+
+```bash
+# Initialize Terraform (downloads providers)
 terraform init
 
-# Review what will be created
+# Review what will be created (optional but recommended)
 terraform plan
 
 # Deploy the infrastructure
@@ -47,232 +127,177 @@ terraform apply
 
 Type `yes` when prompted to confirm.
 
+**Deployment time**: 15-20 minutes (Power VS LPARs take longest)
+
 ## 📋 What Gets Created
 
-- ✅ VPC with 2 subnets (10.240.0.0/24)
-- ✅ VPN Gateway for secure access
-- ✅ Power VS workspace with 2 Linux instances
+### VPC Infrastructure (x86)
+- ✅ VPC with subnet (10.14.105.0/24)
+- ✅ 3 Ubuntu VSIs (2 vCPUs, 4GB RAM each)
+- ✅ 1 Windows VSI (2 vCPUs, 4GB RAM)
+- ✅ NAT Gateway VSI (10.14.105.254)
+- ✅ Security groups and routing tables
+- ✅ Public gateway and 3 floating IPs
+
+### Power Virtual Server Infrastructure (Power)
+- ✅ Power VS workspace in wdc06
+- ✅ Private network (192.168.1.0/24)
+- ✅ 3 LPARs:
+  - CentOS Stream 10 (0.25 cores, 2GB RAM)
+  - RHEL 9 (0.25 cores, 2GB RAM)
+  - RHEL 8 (0.25 cores, 2GB RAM)
+- ✅ Secondary IPs for unified addressing
+- ✅ Power VS routes for LPAR-to-LPAR communication
+
+### Connectivity
 - ✅ Transit Gateway connecting VPC and Power VS
-- ✅ Security groups and network ACLs
+- ✅ NAT Gateway for address translation
+- ✅ VPC custom routes for unified subnet
 
-## 🎯 Common Scenarios
+**Total Resources**: ~41 resources  
+**Estimated Cost**: ~$200-300/month (varies by region and usage)
 
-### Scenario 1: Minimal Dev Environment
+## 🎯 Verify Deployment
 
-```hcl
-vpc_zones               = 1
-power_vs_instance_count = 1
-power_vs_cores          = 0.5
-power_vs_memory         = 8
-enable_vpn_gateway      = false
-enable_vpe              = false
-```
-
-**Cost**: ~$150-250/month
-
-### Scenario 2: Standard Dev/Test (Recommended)
-
-```hcl
-vpc_zones               = 2
-power_vs_instance_count = 2
-power_vs_cores          = 2
-power_vs_memory         = 16
-enable_vpn_gateway      = true
-enable_vpe              = true
-```
-
-**Cost**: ~$350-650/month
-
-### Scenario 3: Production-Ready
-
-```hcl
-vpc_zones               = 3
-power_vs_instance_count = 3
-power_vs_cores          = 4
-power_vs_memory         = 32
-power_vs_processor_type = "dedicated"
-power_vs_storage_type   = "tier1"
-```
-
-**Cost**: ~$1000-1500/month
-
-## 🔑 Adding SSH Access
-
-Generate an SSH key pair:
-
-```bash
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
-```
-
-Add the public key to `terraform.tfvars`:
-
-```hcl
-ssh_public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ..."
-```
-
-## 🌐 Accessing Your Resources
-
-### After Deployment
+After deployment completes, Terraform will output connection information:
 
 ```bash
 # View all outputs
 terraform output
 
-# Get Power VS instance IPs
-terraform output power_vs_instance_ips
+# Test connectivity from Ubuntu VSI
+ssh -i ~/.ssh/ibm-cloud-key ubuntu@<FLOATING_IP>
 
-# Get VPN Gateway IP
-terraform output vpn_gateway_public_ip
+# From Ubuntu VSI, ping Power VS LPARs using unified addresses
+ping 10.14.105.5  # CentOS LPAR
+ping 10.14.105.7  # RHEL 9 LPAR
+ping 10.14.105.9  # RHEL 8 LPAR
+
+# SSH to Power VS LPARs via unified addresses
+ssh -i ~/.ssh/ibm-cloud-key root@10.14.105.5
 ```
 
-### SSH to Power VS Instances
+## 🔧 Common Scenarios
 
-```bash
-# Get the IP address
-POWER_IP=$(terraform output -json power_vs_instance_ips | jq -r '.[0]')
+### Scenario 1: Development/Testing (Current Configuration)
 
-# Connect
-ssh root@$POWER_IP
-```
+**What you get**:
+- 3 Ubuntu VSIs + 1 Windows VSI in VPC
+- 3 Power VS LPARs (minimal sizing)
+- Full connectivity via unified network
 
-## 🧪 Verify Connectivity
+**Cost**: ~$200-300/month
 
-### From Power VS to VPC
+### Scenario 2: Production-Ready
 
-```bash
-# SSH to Power VS instance
-ssh root@<power-vs-ip>
-
-# Ping VPC subnet
-ping 10.240.0.1
-```
-
-### From VPC to Power VS
-
-```bash
-# From a VPC instance
-ping 192.168.10.x
-```
-
-## 🛠️ Troubleshooting
-
-### Issue: "Error creating VPC"
-
-**Solution**: Check that your resource group exists
-
-```bash
-ibmcloud resource groups
-```
-
-### Issue: "Power VS image not found"
-
-**Solution**: List available images for your zone
-
-```bash
-ibmcloud pi images --zone us-south
-```
-
-Update `power_vs_image_name` in terraform.tfvars
-
-### Issue: "Insufficient quota"
-
-**Solution**: Check your account limits
-
-```bash
-ibmcloud is quotas
-```
-
-Request quota increase if needed
-
-## 🔄 Making Changes
-
-### Update Configuration
-
-1. Edit `terraform.tfvars`
-2. Run `terraform plan` to preview changes
-3. Run `terraform apply` to apply changes
-
-### Add More Instances
+Edit `terraform.tfvars`:
 
 ```hcl
-power_vs_instance_count = 3  # Change from 2 to 3
+# Increase VSI sizing
+vsi_profile = "cx2-4x8"  # 4 vCPUs, 8GB RAM
+
+# Increase Power VS LPAR sizing
+power_vs_processors = 1.0
+power_vs_memory = 8
+power_vs_storage_type = "tier1"  # Faster storage
 ```
 
+**Cost**: ~$500-700/month
+
+## 🛠️ Management Commands
+
 ```bash
+# View current infrastructure state
+terraform show
+
+# Update infrastructure (after changing terraform.tfvars)
 terraform apply
+
+# Destroy all infrastructure
+terraform destroy
+
+# View specific output
+terraform output vsi_floating_ip
+terraform output nat_gateway_floating_ip
 ```
 
-## 🗑️ Cleanup
+## 📚 Additional Resources
 
-### Remove Everything
+- **Architecture Details**: See `README.md`
+- **SSH Key Setup**: See `SSH_KEY_SETUP_GUIDE.md`
+- **Configuration Reference**: See `TERRAFORM_CONFIGURATION_SUMMARY.md`
+- **Git Setup**: See `GIT_SETUP_GUIDE.md` (if contributing)
+
+## ❓ Troubleshooting
+
+### Issue: "Resource group not found"
 
 ```bash
+# List available resource groups
+ibmcloud resource groups
+
+# Use the correct ID in terraform.tfvars
+```
+
+### Issue: "SSH key not found"
+
+```bash
+# List VPC SSH keys
+ibmcloud is keys
+
+# Create if missing
+ibmcloud is key-create my-vpc-key @~/.ssh/ibm-cloud-key.pub
+```
+
+### Issue: "Power VS zone not available"
+
+Available zones by region:
+- **us-east**: wdc06, wdc07
+- **us-south**: dal12, dal13
+- **eu-gb**: lon04, lon06
+- **eu-de**: fra04, fra05
+- **jp-tok**: tok04
+- **au-syd**: syd04, syd05
+
+### Issue: "Insufficient permissions"
+
+Ensure your IBM Cloud account has:
+- VPC Infrastructure Services permissions
+- Power Systems Virtual Server permissions
+- Transit Gateway permissions
+
+## 🎉 Success!
+
+Once deployed, you have a fully functional hybrid cloud infrastructure with:
+- ✅ VPC (x86) and Power VS (Power) on a unified network
+- ✅ Seamless communication between x86 and Power workloads
+- ✅ NAT gateway for address translation
+- ✅ Transit Gateway for automatic routing
+- ✅ Production-ready security groups and networking
+
+**Next Steps**:
+1. Deploy your applications to the VSIs and LPARs
+2. Test connectivity between systems
+3. Configure monitoring and logging
+4. Set up backup and disaster recovery
+
+## 💰 Cost Management
+
+To minimize costs during testing:
+
+```bash
+# Stop (but don't destroy) when not in use
+# Note: You'll still pay for storage and some services
+
+# Destroy everything when done testing
 terraform destroy
 ```
 
-Type `yes` to confirm.
+**Remember**: Always run `terraform destroy` when you're done to avoid ongoing charges!
 
-### Remove Specific Resources
+## 🆘 Need Help?
 
-```bash
-# Remove only VPN Gateway
-terraform destroy -target=module.vpn
-
-# Remove only Power VS instances
-terraform destroy -target=module.power_vs
-```
-
-## 📊 Cost Management
-
-### View Estimated Costs
-
-```bash
-# Use IBM Cloud Cost Estimator
-ibmcloud billing estimate
-```
-
-### Stop Instances When Not in Use
-
-```bash
-# Stop Power VS instances
-ibmcloud pi instance-stop <instance-id>
-
-# Start when needed
-ibmcloud pi instance-start <instance-id>
-```
-
-## 🔐 Security Best Practices
-
-1. **Never commit terraform.tfvars** - It's in .gitignore
-2. **Rotate API keys regularly** - Every 90 days
-3. **Use separate keys per environment** - Dev, test, prod
-4. **Enable MFA** - On your IBM Cloud account
-5. **Review security groups** - Restrict to known IPs
-
-## 📚 Next Steps
-
-1. ✅ Deploy infrastructure
-2. ✅ Verify connectivity
-3. ✅ Configure VPN connection (if enabled)
-4. ✅ Install applications on Power VS instances
-5. ✅ Set up monitoring and logging
-6. ✅ Configure backups
-
-## 🆘 Getting Help
-
-- **Documentation**: See [README.md](README.md)
-- **IBM Cloud Docs**: https://cloud.ibm.com/docs
-- **Terraform Provider**: https://registry.terraform.io/providers/IBM-Cloud/ibm
-- **Support**: https://cloud.ibm.com/unifiedsupport/supportcenter
-
-## 💡 Tips
-
-- Start small and scale up
-- Use `terraform plan` before every apply
-- Keep state files secure
-- Document your changes
-- Test in dev before prod
-
----
-
-**Ready to deploy?** Run `terraform init && terraform apply` 🚀
+- Review the detailed documentation in `README.md`
+- Check `TERRAFORM_CONFIGURATION_SUMMARY.md` for configuration options
+- See `SSH_KEY_SETUP_GUIDE.md` for SSH troubleshooting
+- Open an issue on GitHub for bugs or questions

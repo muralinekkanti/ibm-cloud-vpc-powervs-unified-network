@@ -95,7 +95,7 @@ resource "ibm_is_security_group_rule" "vsi_sg_outbound" {
 
 # Use existing SSH key for VPC or create new one
 data "ibm_is_ssh_key" "vpc_ssh_key" {
-  name = "murali-key-n1-rsa"
+  name = var.vpc_ssh_key_name
 }
 
 # Secondary SSH key for additional access
@@ -131,11 +131,11 @@ resource "ibm_is_instance" "ubuntu_vsi" {
     mkdir -p /home/ubuntu/.ssh
     chmod 700 /home/ubuntu/.ssh
     
-    cat > /home/ubuntu/.ssh/murali-key-n1-rsa.prv <<'SSHKEY'
-${file("${path.module}/murali-key-n1-rsa.prv")}
+    cat > /home/ubuntu/.ssh/example-key.prv <<'SSHKEY'
+${file("${path.module}/ssh-keys/example-key.prv")}
 SSHKEY
     
-    chmod 600 /home/ubuntu/.ssh/murali-key-n1-rsa.prv
+    chmod 600 /home/ubuntu/.ssh/example-key.prv
     chown -R ubuntu:ubuntu /home/ubuntu/.ssh
     
     # Configure routes and ARP entries for Power VS systems via NAT gateway
@@ -219,8 +219,8 @@ resource "ibm_resource_instance" "power_vs_workspace" {
 # Create Power VS SSH key (Power VS requires RSA keys)
 resource "ibm_pi_key" "power_vs_ssh_key" {
   pi_cloud_instance_id = ibm_resource_instance.power_vs_workspace.guid
-  pi_key_name          = "murali-key-n1-rsa"
-  pi_ssh_key           = file("${path.module}/murai-key-n1-rsa.pub")
+  pi_key_name          = var.power_vs_ssh_key_name
+  pi_ssh_key           = file("${path.module}/ssh-keys/example-key.pub")
 }
 
 # Create secondary Power VS SSH key

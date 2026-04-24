@@ -113,10 +113,10 @@ output "unified_subnet_map" {
 output "connection_commands" {
   description = "SSH/RDP commands for all systems"
   value = {
-    ubuntu_vsi_1     = "ssh -i ~/.ssh/murali-key-n1-rsa.prv ubuntu@${ibm_is_floating_ip.vsi_fip.address}"
-    ubuntu_vsi_2     = "ssh -i ~/.ssh/murali-key-n1-rsa.prv ubuntu@${ibm_is_instance.ubuntu_vsi_2.primary_network_interface[0].primary_ip[0].address} (from within VPC)"
+    ubuntu_vsi_1     = "ssh -i ~/.ssh/example-key.prv ubuntu@${ibm_is_floating_ip.vsi_fip.address}"
+    ubuntu_vsi_2     = "ssh -i ~/.ssh/example-key.prv ubuntu@${ibm_is_instance.ubuntu_vsi_2.primary_network_interface[0].primary_ip[0].address} (from within VPC)"
     windows_vsi      = "RDP to ${ibm_is_floating_ip.windows_fip.address}"
-    nat_gateway      = "ssh -i ~/.ssh/murali-key-n1-rsa.prv ubuntu@${ibm_is_floating_ip.nat_gateway_fip.address}"
+    nat_gateway      = "ssh -i ~/.ssh/example-key.prv ubuntu@${ibm_is_floating_ip.nat_gateway_fip.address}"
     centos_lpar      = "ping 10.14.105.5 (from any VPC VSI)"
     rhel9_lpar       = "ping 10.14.105.7 (from any VPC VSI)"
     rhel8_lpar       = "ping 10.14.105.9 (from any VPC VSI)"
@@ -131,7 +131,7 @@ output "test_connectivity" {
   description = "Commands to test unified subnet connectivity"
   value = <<-EOT
     # From Ubuntu VSI 1 (10.14.105.4):
-    ssh -i ~/.ssh/murali-key-n1-rsa.prv ubuntu@${ibm_is_floating_ip.vsi_fip.address}
+    ssh -i ~/.ssh/example-key.prv ubuntu@${ibm_is_floating_ip.vsi_fip.address}
     
     # Test connectivity to all systems:
     ping -c 4 10.14.105.6   # Ubuntu VSI 2
@@ -144,9 +144,9 @@ output "test_connectivity" {
     ip route | grep 10.14.105
     
     # Test SSH to Power VS systems (via NAT):
-    ssh -i ~/.ssh/murali-key-n1-rsa.prv root@10.14.105.5
-    ssh -i ~/.ssh/murali-key-n1-rsa.prv root@10.14.105.7
-    ssh -i ~/.ssh/murali-key-n1-rsa.prv root@10.14.105.9
+    ssh -i ~/.ssh/example-key.prv root@10.14.105.5
+    ssh -i ~/.ssh/example-key.prv root@10.14.105.7
+    ssh -i ~/.ssh/example-key.prv root@10.14.105.9
   EOT
 }
 
@@ -154,7 +154,7 @@ output "nat_gateway_status" {
   description = "Commands to check NAT gateway status"
   value = <<-EOT
     # SSH to NAT Gateway:
-    ssh -i ~/.ssh/murali-key-n1-rsa.prv ubuntu@${ibm_is_floating_ip.nat_gateway_fip.address}
+    ssh -i ~/.ssh/example-key.prv ubuntu@${ibm_is_floating_ip.nat_gateway_fip.address}
     
     # Check NAT rules:
     sudo iptables -t nat -L -n -v

@@ -53,7 +53,7 @@ output "vsi_floating_ip" {
 
 output "ssh_connection_vsi" {
   description = "SSH command to connect to the VSI"
-  value       = "ssh -i ~/.ssh/murali-key-n1-rsa.prv ubuntu@${ibm_is_floating_ip.vsi_fip.address}"
+  value       = "ssh -i ~/.ssh/example-key.prv ubuntu@${ibm_is_floating_ip.vsi_fip.address}"
 }
 
 # ==============================================================================
@@ -112,7 +112,7 @@ output "lpar_ip" {
 
 output "ssh_connection_lpar" {
   description = "SSH command to connect to the LPAR (from VSI)"
-  value       = "ssh -i ~/.ssh/murali-key-n1-rsa.prv root@${ibm_pi_instance.centos_lpar.pi_network[0].ip_address}"
+  value       = "ssh -i ~/.ssh/example-key.prv root@${ibm_pi_instance.centos_lpar.pi_network[0].ip_address}"
 }
 
 # ==============================================================================
