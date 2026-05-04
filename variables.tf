@@ -80,6 +80,34 @@ variable "vpc_cidr" {
   }
 }
 
+variable "vpc_subnet_cidr" {
+  description = "CIDR block for the VPC subnet"
+  type        = string
+  default     = "10.14.105.0/24"
+  validation {
+    condition     = can(cidrhost(var.vpc_subnet_cidr, 0))
+    error_message = "VPC subnet CIDR must be a valid IPv4 CIDR block."
+  }
+}
+
+variable "centos_lpar_ip_offset" {
+  description = "IP offset for CentOS LPAR secondary IP (e.g., 5 for x.x.x.5)"
+  type        = number
+  default     = 5
+}
+
+variable "rhel9_lpar_ip_offset" {
+  description = "IP offset for RHEL 9 LPAR secondary IP (e.g., 7 for x.x.x.7)"
+  type        = number
+  default     = 7
+}
+
+variable "rhel8_lpar_ip_offset" {
+  description = "IP offset for RHEL 8 LPAR secondary IP (e.g., 9 for x.x.x.9)"
+  type        = number
+  default     = 9
+}
+
 variable "vpc_zones" {
   description = "Number of availability zones to use (1-3)"
   type        = number
@@ -145,7 +173,7 @@ variable "power_vs_zone" {
 variable "power_vs_network_cidr" {
   description = "CIDR block for Power VS private network"
   type        = string
-  default     = "192.168.10.0/24"
+  default     = "192.168.1.0/24"
   validation {
     condition     = can(cidrhost(var.power_vs_network_cidr, 0))
     error_message = "Power VS network CIDR must be a valid IPv4 CIDR block."
